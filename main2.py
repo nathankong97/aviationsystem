@@ -2,7 +2,7 @@ from PyQt5 import QtGui, QtCore
 from PyQt5.QtWidgets import QApplication, QDialog,QTabWidget, \
     QComboBox, QCheckBox ,QGroupBox ,QVBoxLayout, QWidget, \
     QLabel, QLineEdit, QDialogButtonBox, QRadioButton, \
-    QPushButton, QMainWindow, QHBoxLayout
+    QPushButton, QHBoxLayout, QTableWidget
 import sys
 from PyQt5.QtGui import QIcon
 
@@ -28,6 +28,7 @@ class MainFrame(QDialog):
 
         tabWidget.setFont(QtGui.QFont("MS Sans Serif", 10))
         tabWidget.addTab(InstantSearch(), "Flight")
+        tabWidget.addTab(Library(), "Library")
         #tabWidget.addTab(TabPeronsalDetails(), "Personal Details")
 
 
@@ -122,9 +123,63 @@ class InstantSearch(QWidget):
         mainLayout.addWidget(groupBox4)
         self.setLayout(mainLayout)
 
+class Library(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        groupBox = QGroupBox("Library to look up the Airport or Airline Code: ")
+        groupBox.setFont(QtGui.QFont("MS Sans Serif", 10))
+        vbox = QVBoxLayout()
+
+        #label = QLabel("Library to look up the Airport or Airline Code: ")
+        #label.setFont(QtGui.QFont("MS Sans Serif", 10))
+        code = QLineEdit()
+        #vbox.addWidget(label)
+        vbox.addWidget(code)
+        groupBox.setLayout(vbox)
+
+        groupBox2 = QGroupBox("")
+        vbox2 = QHBoxLayout()
+        radiobtn1 = QRadioButton("Airport")
+        radiobtn1.setFont(QtGui.QFont("MS Sans Serif", 10))
+        radiobtn1.setIcon(QtGui.QIcon("airport.png"))
+        radiobtn1.setChecked(True)
+        vbox2.addWidget(radiobtn1)
+        radiobtn2 = QRadioButton("Airline")
+        radiobtn2.setFont(QtGui.QFont("MS Sans Serif", 10))
+        radiobtn2.setIcon(QtGui.QIcon("airline.png"))
+        vbox2.addWidget(radiobtn2)
+        groupBox2.setLayout(vbox2)
+
+        groupBox3 = QGroupBox("")
+        vbox3 = QHBoxLayout()
+        button = QPushButton("Search", self)
+        button.setIcon(QtGui.QIcon("library.png"))
+        button.setFont(QtGui.QFont("MS Sans Serif", 10))
+        button.setIconSize(QtCore.QSize(40, 40))
+        button.setToolTip("<h4>Search the IATA code from the Aviation Library.<h4>")
+        button2 = QPushButton("More", self)
+        button2.setIcon(QtGui.QIcon("more info.png"))
+        button2.setFont(QtGui.QFont("MS Sans Serif", 10))
+        button2.setIconSize(QtCore.QSize(40, 40))
+        button2.setToolTip("<h4>This will obtain the more information of the airport or airline.<h4>")
+        vbox3.addWidget(button)
+        vbox3.addWidget(button2)
+        groupBox3.setLayout(vbox3)
+
+        table = QTableWidget(self)  # Create a table
+        table.setColumnCount(4)  # Set three columns
+        table.setRowCount(1)
+        table.setHorizontalHeaderLabels(["IATA", "ICAO", "Name", "Country"])
+        table.resizeColumnsToContents()
 
 
-
+        mainLayout = QVBoxLayout()
+        mainLayout.addWidget(groupBox)
+        mainLayout.addWidget(groupBox2)
+        mainLayout.addWidget(groupBox3)
+        mainLayout.addWidget(table)
+        self.setLayout(mainLayout)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
