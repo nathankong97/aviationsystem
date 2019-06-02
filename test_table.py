@@ -2,7 +2,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 import pandas as pd
 
-df = pd.read_pickle("airports.pkl")
+#df = pd.read_pickle("airports.pkl")
 
 class Window(QtWidgets.QWidget):
     def __init__(self):
@@ -88,7 +88,10 @@ class PandasModel(QtCore.QAbstractTableModel):
         self._df.reset_index(inplace=True, drop=True)
         self.layoutChanged.emit()
 
-if __name__ == '__main__':
+def main():
     application = QtWidgets.QApplication(sys.argv)
     window = Window()
-    sys.exit(application.exec_())
+    window.show()
+
+if __name__ == '__main__':
+    main()

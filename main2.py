@@ -2,9 +2,13 @@ from PyQt5 import QtGui, QtCore
 from PyQt5.QtWidgets import QApplication, QDialog,QTabWidget, \
     QComboBox, QCheckBox ,QGroupBox ,QVBoxLayout, QWidget, \
     QLabel, QLineEdit, QDialogButtonBox, QRadioButton, \
-    QPushButton, QHBoxLayout, QTableWidget
+    QPushButton, QHBoxLayout, QTableWidget, QTableView, QGridLayout, QTableWidgetItem
 import sys
 from PyQt5.QtGui import QIcon
+import test_table as tt
+import pandas as pd
+
+df = pd.read_pickle("airports.pkl")
 
 class MainFrame(QDialog):
     def __init__(self):
@@ -112,7 +116,7 @@ class InstantSearch(QWidget):
         button.setFont(QtGui.QFont("MS Sans Serif", 10))
         button.setIconSize(QtCore.QSize(25, 25))
         button.setToolTip("<h4>Search for today's flight<h4>")
-        #button.clicked.connect(self.ButtonAction)
+        button.clicked.connect(self.on_click)
         vbox4.addWidget(button)
 
         groupBox4.setLayout(vbox4)
@@ -123,6 +127,133 @@ class InstantSearch(QWidget):
         mainLayout.addWidget(groupBox3)
         mainLayout.addWidget(groupBox4)
         self.setLayout(mainLayout)
+
+    def on_click(self):
+        #mydialog = QDialog(self)
+        app = QApplication(sys.argv)
+        view = PrettyWidget()
+        view.show()
+        app.exec()
+        #myWindow = Window()
+        #myWindow.show()
+
+
+class PrettyWidget(QDialog):
+    def __init__(self):
+        super(PrettyWidget, self).__init__()
+        self.initUI()
+
+    def initUI(self):
+        self.setGeometry(600, 300, 400, 200)
+        self.setWindowTitle('Table')
+
+        # Grid Layout
+        grid = QGridLayout()
+        self.setLayout(grid)
+
+        # Data
+        data = {'Kitty': ['1', '2', '3', '3'],
+                'Cat': ['4', '5', '6', '2'],
+                'Meow': ['7', '8', '9', '5'],
+                'Purr': ['4', '3', '4', '8'], }
+
+        # Create Empty 5x5 Table
+        table = QTableWidget(self)
+        table.setRowCount(5)
+        table.setColumnCount(5)
+
+        horHeaders = []
+        for n, key in enumerate(sorted(data.keys())):
+            horHeaders.append(key)
+            for m, item in enumerate(data[key]):
+                newitem = QTableWidgetItem(item)
+                table.setItem(m, n, newitem)
+
+        # Add Header
+        table.setHorizontalHeaderLabels(horHeaders)
+
+        # Adjust size of Table
+        table.resizeColumnsToContents()
+        table.resizeRowsToContents()
+
+        # Add Table to Grid
+        grid.addWidget(table, 0, 0)
+
+        self.show()
+
+class table(QTableView):
+    def __init__(self):
+        super().__init__()
+
+        self.title = "PyQt5 Tables"
+        self.top = 100
+        self.left = 100
+        self.width = 1500
+        self.height = 700
+
+        self.setWindowTitle(self.title)
+        self.setGeometry(self.top, self.left, self.width, self.height)
+        self.show()
+
+
+class PandasModel(QtCore.QAbstractTableModel):
+    def __init__(self, df = pd.DataFrame(), parent=None):
+        QtCore.QAbstractTableModel.__init__(self, parent=parent)
+        self._df = df
+
+    def headerData(self, section, orientation, role=QtCore.Qt.DisplayRole):
+        if role != QtCore.Qt.DisplayRole:
+            return QtCore.QVariant()
+
+        if orientation == QtCore.Qt.Horizontal:
+            try:
+                return self._df.columns.tolist()[section]
+            except (IndexError, ):
+                return QtCore.QVariant()
+        elif orientation == QtCore.Qt.Vertical:
+            try:
+                # return self.df.index.tolist()
+                return self._df.index.tolist()[section]
+            except (IndexError, ):
+                return QtCore.QVariant()
+
+    def data(self, index, role=QtCore.Qt.DisplayRole):
+        if role != QtCore.Qt.DisplayRole:
+            return QtCore.QVariant()
+
+        if not index.isValid():
+            return QtCore.QVariant()
+
+        return QtCore.QVariant(str(self._df.ix[index.row(), index.column()]))
+
+    def setData(self, index, value, role):
+        row = self._df.index[index.row()]
+        col = self._df.columns[index.column()]
+        if hasattr(value, 'toPyObject'):
+            # PyQt4 gets a QVariant
+            value = value.toPyObject()
+        else:
+            # PySide gets an unicode
+            dtype = self._df[col].dtype
+            if dtype != object:
+                value = None if value == '' else dtype.type(value)
+        self._df.set_value(row, col, value)
+        return True
+
+    def rowCount(self, parent=QtCore.QModelIndex()):
+        return len(self._df.index)
+
+    def columnCount(self, parent=QtCore.QModelIndex()):
+        return len(self._df.columns)
+
+    def sort(self, column, order):
+        colname = self._df.columns.tolist()[column]
+        self.layoutAboutToBeChanged.emit()
+        self._df.sort_values(colname, ascending= order == QtCore.Qt.AscendingOrder, inplace=True)
+        self._df.reset_index(inplace=True, drop=True)
+        self.layoutChanged.emit()
+
+
 
 class Library(QWidget):
     def __init__(self):
